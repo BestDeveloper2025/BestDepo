@@ -6,5 +6,7 @@ data class MachinePrescriptionsDto(
     @SerializedName("Durum")
     val durum: String,
     @SerializedName("StokKoduListe")
-    val stockCodeListDto: List<StockCodeListDto>
+    val stockCodeListDto: List<StockCodeListDto>? = null,
+    @SerializedName("SayacNo")
+    val counter: Int,
 )

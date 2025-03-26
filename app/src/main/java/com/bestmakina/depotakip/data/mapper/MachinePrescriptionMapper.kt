@@ -5,6 +5,8 @@ import com.bestmakina.depotakip.domain.model.StockCodes
 
 fun MachinePrescriptionsDto.toDomain(): StockCodes {
     return StockCodes(
-        stockCodes = stockCodeListDto.map { it.stockCode }
+        status = durum,
+        stockCodes = stockCodeListDto?.map { it.stockCode },
+        counter = counter
     )
 }

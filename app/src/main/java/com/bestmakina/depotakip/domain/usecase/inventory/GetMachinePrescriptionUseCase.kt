@@ -1,5 +1,6 @@
 package com.bestmakina.depotakip.domain.usecase.inventory
 
+import android.util.Log
 import com.bestmakina.depotakip.common.network.NetworkResult
 import com.bestmakina.depotakip.data.model.request.inventory.MachineSerialRequest
 import com.bestmakina.depotakip.domain.model.StockCodes

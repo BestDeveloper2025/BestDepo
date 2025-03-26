@@ -1,5 +1,6 @@
 package com.bestmakina.depotakip.presentation.ui.component.panel
 
+
 import android.graphics.BitmapFactory
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Image
@@ -16,7 +17,6 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.min
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
@@ -26,7 +26,7 @@ import com.bestmakina.depotakip.presentation.ui.component.custom.QuantitySelecto
 import com.bestmakina.depotakip.presentation.ui.component.custom.TableStockInfo
 
 @Composable
-fun StockDetailPanel(
+fun BulkStockDetailPanel(
     stockCode: String,
     barcode: String,
     shelfCode: String,
@@ -37,7 +37,7 @@ fun StockDetailPanel(
     virtualSafe: Int,
     imageData: String,
     montajaVerilen: Int,
-    minStock: Int,
+    minStock: Int = 0,
     onclick: (Int, String) -> Unit,
     onBackButtonClick: () -> Unit,
 ) {
@@ -110,19 +110,33 @@ fun StockDetailPanel(
                     montajaVerilen,
                     minStock
                 )
-                Button(
-                    onClick = {
-                        if (buttonClickable.value) {
-                            showConfirmationDialog = true
-                        } else {
-                            context.toastShort("Lütfen Barkod Okutunuz")
-                        }
-                    },
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.surface),
-                    shape = RoundedCornerShape(8.dp)
+                Row(
+                    modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text(text = "Transfer Et", color = Color.Black, fontSize = 16.sp)
+                    Button(
+                        onClick = {
+                            if (buttonClickable.value) {
+                                showConfirmationDialog = true
+                            } else {
+                                context.toastShort("Lütfen Barkod Okutunuz")
+                            }
+                        },
+                        modifier = Modifier.weight(1f).padding(horizontal = 1.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.surface),
+                        shape = RoundedCornerShape(8.dp)
+                    ) {
+                        Text(text = "Sipariş Oluştur", color = Color.Black, fontSize = 16.sp)
+                    }
+                    Button(
+                        onClick = {
+                            TODO()
+                        },
+                        modifier = Modifier.weight(1f).padding(horizontal = 1.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.surface),
+                        shape = RoundedCornerShape(8.dp)
+                    ) {
+                        Text(text = "Transfer Et", color = Color.Black, fontSize = 16.sp)
+                    }
                 }
                 QuantitySelector(
                     quantity = quantity,

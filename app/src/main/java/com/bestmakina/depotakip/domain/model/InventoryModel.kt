@@ -12,5 +12,6 @@ data class InventoryModel(
     val sanalKasa: Int?,
     val urunAdi: String?,
     val resimData: String?,
-    val montajaVerilen: Int?
+    val montajaVerilen: Int?,
+    val minStock: Int?
 )

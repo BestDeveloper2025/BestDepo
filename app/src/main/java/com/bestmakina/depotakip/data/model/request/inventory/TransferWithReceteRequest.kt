@@ -8,4 +8,6 @@ data class TransferWithReceteRequest(
     val TeslimAlan: String,
     val TransferMiktari: String,
     val TransferNedeni: String
+    //TODO burda sayac eklenecek
+    //val SayacNo: Int?
 )

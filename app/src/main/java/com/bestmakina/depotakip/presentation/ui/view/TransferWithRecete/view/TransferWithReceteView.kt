@@ -152,6 +152,7 @@ fun TransferWithReceteView(
                 virtualSafe = state.panelData?.sanalKasa?.toInt() ?: 0,
                 imageData = state.panelData?.resimData ?: "",
                 montajaVerilen = state.panelData?.montajaVerilen ?: 0,
+                minStock = state.panelData?.minStock ?: 0,
                 onclick = { quantity, stockCode ->
                     transferWithReceteViewModel.handleAction(
                         TransferWithReceteAction.TransferButtonClick(quantity, stockCode)

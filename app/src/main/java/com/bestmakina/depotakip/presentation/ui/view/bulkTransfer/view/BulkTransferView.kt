@@ -33,7 +33,9 @@ import com.bestmakina.depotakip.common.model.DropdownType
 import com.bestmakina.depotakip.common.util.extension.toastShort
 import com.bestmakina.depotakip.presentation.ui.component.button.CustomButton
 import com.bestmakina.depotakip.presentation.ui.component.card.ExpandableCard
+import com.bestmakina.depotakip.presentation.ui.component.panel.BulkStockDetailPanel
 import com.bestmakina.depotakip.presentation.ui.component.panel.SearchablePanel
+import com.bestmakina.depotakip.presentation.ui.component.panel.StockDetailPanel
 import com.bestmakina.depotakip.presentation.ui.view.TransferWithRecete.TransferWithReceteAction
 import com.bestmakina.depotakip.presentation.ui.view.bulkTransfer.BulkTransferAction
 import com.bestmakina.depotakip.presentation.ui.view.bulkTransfer.BulkTransferEffect
@@ -107,7 +109,6 @@ fun BulkTransferView(
                 }
             )
             if (state.isNfcEnabled){
-                Log.d("BulkTransferView", "selectedMachine: ${state.selectedMachine}")
                 ExpandableCard(
                     selectedItem = state.selectedMachine?.name ?: "",
                     onclick = {
@@ -150,8 +151,27 @@ fun BulkTransferView(
                         )
                     }
                 }
-
             }
+        }
+        AnimatedVisibility(visible = state.detailPanelVisibility) {
+            BulkStockDetailPanel(
+                stockCode = state.currentProductDetail?.stokKodu ?: "",
+                barcode = state.currentProductDetail?.barkodNo ?: "",
+                shelfCode = state.currentProductDetail?.rafKodu ?: "",
+                stockName = state.currentProductDetail?.urunAdi ?: "",
+                recipeAmount = state.currentProductDetail?.receteMiktari?.toInt() ?: 0,
+                upperDepotAmount = state.currentProductDetail?.ustDepoAdet?.toInt() ?: 0,
+                lowerDepotAmount = state.currentProductDetail?.altDepoAdet?.toInt() ?: 0,
+                virtualSafe = state.currentProductDetail?.sanalKasa?.toInt() ?: 0,
+                imageData = state.currentProductDetail?.resimData ?: "",
+                montajaVerilen = state.currentProductDetail?.montajaVerilen ?: 0,
+                onclick = { quantity, stockCode ->
+                    Log.d("BulkTransferView", "BulkTransferView: $quantity, $stockCode")
+                },
+                onBackButtonClick = {
+                    viewModel.handleAction(BulkTransferAction.CloseDetailPanel)
+                }
+            )
         }
     }
 }

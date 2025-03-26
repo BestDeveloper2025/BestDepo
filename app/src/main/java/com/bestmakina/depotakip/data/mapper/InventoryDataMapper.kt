@@ -16,6 +16,7 @@ fun InventoryDataDto.toDomain(): InventoryModel {
         sanalKasa = sanalKasa,
         urunAdi = stokAdi,
         resimData = resim,
-        montajaVerilen = montajaVerilen
+        montajaVerilen = montajaVerilen,
+        minStock = minStock
     )
 }

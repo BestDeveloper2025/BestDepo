@@ -32,5 +32,7 @@ data class InventoryDataDto(
     @SerializedName("Resim")
     val resim: String?,
     @SerializedName("Sure")
-    val sure: Int?
+    val sure: Int?,
+    @SerializedName("MinimumStok")
+    val minStock: Int?
 )

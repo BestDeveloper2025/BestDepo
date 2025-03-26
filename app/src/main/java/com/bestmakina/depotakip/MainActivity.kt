@@ -1,13 +1,11 @@
 package com.bestmakina.depotakip
 
-import TransferWithReceteView
 import android.app.PendingIntent
 import android.content.Intent
 import android.content.IntentFilter
 import android.nfc.NfcAdapter
 import android.nfc.Tag
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -51,10 +49,6 @@ class MainActivity : ComponentActivity() {
             DepoTakipTheme {
                 BulkTransferView(navController)
             }
-        }
-
-        if (nfcAdapter == null) {
-            Log.d("NFC", "NFC is not supported on this device")
         }
     }
 

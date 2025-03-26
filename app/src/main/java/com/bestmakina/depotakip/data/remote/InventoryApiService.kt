@@ -19,4 +19,5 @@ interface InventoryApiService {
 
     @POST("BestUretim/hs/Best/MakinaSeriRecete")
     suspend fun getMachinePrescriptions(@Body request: MachineSerialRequest): Response<MachinePrescriptionsDto>
+
 }

@@ -1,5 +1,7 @@
 package com.bestmakina.depotakip.domain.model
 
 data class StockCodes(
-    val stockCodes: List<String>
+    val status: String,
+    val stockCodes: List<String>? = null,
+    val counter: Int
 )
