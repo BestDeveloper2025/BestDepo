@@ -10,8 +10,8 @@ import com.bestmakina.depotakip.data.local.SharedPreferencesHelper
 import com.bestmakina.depotakip.domain.manager.BarcodeManager
 import com.bestmakina.depotakip.domain.manager.NfcManager
 import com.bestmakina.depotakip.domain.model.PreferencesKeys
-import com.bestmakina.depotakip.domain.usecase.GetNameByBarcodeUseCase
-import com.bestmakina.depotakip.domain.usecase.GetPersonnelUseCase
+import com.bestmakina.depotakip.domain.usecase.personnel.GetNameByBarcodeUseCase
+import com.bestmakina.depotakip.domain.usecase.personnel.GetPersonnelUseCase
 import com.bestmakina.depotakip.presentation.ui.view.login.LoginAction
 import com.bestmakina.depotakip.presentation.ui.view.login.LoginEffect
 import com.bestmakina.depotakip.presentation.ui.view.login.LoginState

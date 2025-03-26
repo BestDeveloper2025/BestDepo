@@ -1,4 +1,4 @@
-package com.bestmakina.depotakip.domain.usecase
+package com.bestmakina.depotakip.domain.usecase.device
 
 import com.bestmakina.depotakip.data.model.request.device.CheckDeviceStatusRequest
 import com.bestmakina.depotakip.domain.repository.remote.DeviceRepository

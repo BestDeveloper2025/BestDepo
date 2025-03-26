@@ -15,9 +15,9 @@ import com.bestmakina.depotakip.data.local.entity.RecipientEntity
 import com.bestmakina.depotakip.data.local.entity.TransferReasonEntity
 import com.bestmakina.depotakip.data.model.request.device.CheckDeviceStatusRequest
 import com.bestmakina.depotakip.domain.model.PreferencesKeys
-import com.bestmakina.depotakip.domain.usecase.CheckDeviceStatusUseCase
-import com.bestmakina.depotakip.domain.usecase.GetMachineListUseCase
-import com.bestmakina.depotakip.domain.usecase.GetTeslimAlanUseCase
+import com.bestmakina.depotakip.domain.usecase.device.CheckDeviceStatusUseCase
+import com.bestmakina.depotakip.domain.usecase.inventory.GetMachineListUseCase
+import com.bestmakina.depotakip.domain.usecase.personnel.GetTeslimAlanUseCase
 import com.bestmakina.depotakip.domain.usecase.GetTransferNedeniUseCase
 import com.bestmakina.depotakip.domain.usecase.cache.SaveAllMachineDataUseCase
 import com.bestmakina.depotakip.domain.usecase.cache.SaveAllRecipientUseCase

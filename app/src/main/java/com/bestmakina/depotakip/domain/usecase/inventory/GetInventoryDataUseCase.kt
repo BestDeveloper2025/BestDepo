@@ -1,4 +1,4 @@
-package com.bestmakina.depotakip.domain.usecase
+package com.bestmakina.depotakip.domain.usecase.inventory
 
 import com.bestmakina.depotakip.common.network.NetworkResult
 import com.bestmakina.depotakip.data.model.request.inventory.GetInventoryDataRequest

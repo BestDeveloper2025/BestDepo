@@ -17,19 +17,28 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import com.bestmakina.depotakip.common.model.DropdownType
+import com.bestmakina.depotakip.common.util.extension.toastShort
+import com.bestmakina.depotakip.presentation.ui.component.button.CustomButton
 import com.bestmakina.depotakip.presentation.ui.component.card.ExpandableCard
+import com.bestmakina.depotakip.presentation.ui.component.panel.SearchablePanel
 import com.bestmakina.depotakip.presentation.ui.view.TransferWithRecete.TransferWithReceteAction
+import com.bestmakina.depotakip.presentation.ui.view.bulkTransfer.BulkTransferAction
+import com.bestmakina.depotakip.presentation.ui.view.bulkTransfer.BulkTransferEffect
 import com.bestmakina.depotakip.presentation.ui.view.bulkTransfer.viewmodel.BulkTransferViewModel
+import kotlinx.coroutines.flow.collectLatest
 
 @Composable
 fun BulkTransferView(
@@ -38,6 +47,28 @@ fun BulkTransferView(
 ) {
 
     val state = viewModel.state.collectAsStateWithLifecycle().value
+    val context = LocalContext.current
+
+    LaunchedEffect(Unit) {
+        viewModel.effect.collectLatest { effect ->
+            when(effect){
+                is BulkTransferEffect.ShowToast -> context.toastShort(effect.message)
+            }
+        }
+    }
+
+    AnimatedVisibility(visible = state.searchablePanelVisibility) {
+        SearchablePanel(
+            items = state.machineList,
+            selectedId = null,
+            onItemSelected = {
+                viewModel.handleAction(BulkTransferAction.LoadMachineData(it))
+            },
+            onDismiss = {
+                viewModel.handleAction(BulkTransferAction.ChangePanelVisibility)
+            }
+        )
+    }
 
     Box(
         modifier = Modifier
@@ -75,8 +106,24 @@ fun BulkTransferView(
                     Log.d("BulkTransferView", "BulkTransferView: $state")
                 }
             )
+            if (state.isNfcEnabled){
+                Log.d("BulkTransferView", "selectedMachine: ${state.selectedMachine}")
+                ExpandableCard(
+                    selectedItem = state.selectedMachine?.name ?: "",
+                    onclick = {
+                        viewModel.handleAction(BulkTransferAction.ChangePanelVisibility)
+                    }
+                )
+            }
         }
-
+        Box(
+            modifier = Modifier.align(Alignment.BottomEnd).padding(bottom = 74.dp)
+        ){
+            CustomButton(
+                title = "Transferi Başlat",
+                onClick = {viewModel.handleAction(BulkTransferAction.StartTransferButtonClick)}
+            )
+        }
         AnimatedVisibility(visible = state.isLoading) {
             Box(
                 modifier = Modifier
@@ -107,5 +154,4 @@ fun BulkTransferView(
             }
         }
     }
-
 }

@@ -25,7 +25,7 @@ import com.bestmakina.depotakip.presentation.ui.view.nftregistration.NftRegistra
 import com.bestmakina.depotakip.presentation.ui.view.nftregistration.viewmodel.NftRegistrationViewModel
 
 @Composable
-fun NftRegistrationView(navController: NavHostController, viewModel: NftRegistrationViewModel = hiltViewModel()) {
+fun NftRegistrationView(viewModel: NftRegistrationViewModel = hiltViewModel()) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
 

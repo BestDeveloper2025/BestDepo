@@ -21,8 +21,6 @@ import com.bestmakina.depotakip.common.util.event.NfcEvents
 import com.bestmakina.depotakip.presentation.navigation.AppNavGraph
 import com.bestmakina.depotakip.presentation.theme.DepoTakipTheme
 import com.bestmakina.depotakip.presentation.ui.view.bulkTransfer.view.BulkTransferView
-import com.bestmakina.depotakip.presentation.ui.view.home.view.HomeView
-import com.bestmakina.depotakip.presentation.ui.view.splash.view.SplashView
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 

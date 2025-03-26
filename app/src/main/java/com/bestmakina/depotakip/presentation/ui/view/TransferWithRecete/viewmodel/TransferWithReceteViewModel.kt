@@ -14,7 +14,7 @@ import com.bestmakina.depotakip.data.model.request.inventory.TransferWithReceteR
 import com.bestmakina.depotakip.domain.manager.BarcodeManager
 import com.bestmakina.depotakip.domain.manager.NfcManager
 import com.bestmakina.depotakip.domain.model.PreferencesKeys
-import com.bestmakina.depotakip.domain.usecase.GetInventoryDataUseCase
+import com.bestmakina.depotakip.domain.usecase.inventory.GetInventoryDataUseCase
 import com.bestmakina.depotakip.domain.usecase.TransferWithReceteUseCase
 import com.bestmakina.depotakip.domain.usecase.cache.GetAllMachineDataUseCase
 import com.bestmakina.depotakip.domain.usecase.cache.GetAllRecipientUseCase
@@ -87,9 +87,9 @@ class TransferWithReceteViewModel @Inject constructor(
             )
 
             is TransferWithReceteAction.LoadItemData -> loadItemData(action.transferItemModel)
-            TransferWithReceteAction.ChangeListPanelVisibility -> changeListPanelVisibility()
-            TransferWithReceteAction.CloseDetailPanel -> closeDetailPanel()
-            TransferWithReceteAction.PreparePage -> setViewData()
+            is TransferWithReceteAction.ChangeListPanelVisibility -> changeListPanelVisibility()
+            is TransferWithReceteAction.CloseDetailPanel -> closeDetailPanel()
+            is TransferWithReceteAction.PreparePage -> setViewData()
         }
     }
 
@@ -194,7 +194,7 @@ class TransferWithReceteViewModel @Inject constructor(
 
     private fun getInventoryData(barcodeData: String) {
         val selectedMachineId = state.value.selectedMachine?.id ?: return
-        Log.d("TransferWithRecete", "getInventoryData burda: $barcodeData")
+        Log.d("TransferWithRecete", "getInventoryData burda: $selectedMachineId")
         viewModelScope.launch {
             getInventoryDataUseCase(
                 GetInventoryDataRequest(

@@ -1,4 +1,4 @@
-package com.bestmakina.depotakip.domain.usecase
+package com.bestmakina.depotakip.domain.usecase.personnel
 
 import com.bestmakina.depotakip.common.network.NetworkResult
 import com.bestmakina.depotakip.data.model.response.device.TeslimAlanResponse

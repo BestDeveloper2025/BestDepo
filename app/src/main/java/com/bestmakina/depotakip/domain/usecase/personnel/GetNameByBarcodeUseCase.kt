@@ -1,4 +1,4 @@
-package com.bestmakina.depotakip.domain.usecase
+package com.bestmakina.depotakip.domain.usecase.personnel
 
 import com.bestmakina.depotakip.domain.repository.remote.WarehousePersonnelRepository
 import javax.inject.Inject

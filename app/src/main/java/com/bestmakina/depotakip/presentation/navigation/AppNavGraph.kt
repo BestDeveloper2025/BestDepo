@@ -46,7 +46,7 @@ fun AppNavGraph(navController: NavHostController) {
             }
         }
         composable(Screens.NfcRegistrationScreen.route) {
-            NftRegistrationView(navController)
+            NftRegistrationView()
             BackHandler {
                 navController.navigate("home") {
                     popUpTo("nfcRegistration") { inclusive = true }
