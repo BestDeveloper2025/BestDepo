@@ -53,7 +53,7 @@ fun BulkTransferView(
 
     LaunchedEffect(Unit) {
         viewModel.effect.collectLatest { effect ->
-            when(effect){
+            when (effect) {
                 is BulkTransferEffect.ShowToast -> context.toastShort(effect.message)
             }
         }
@@ -108,7 +108,7 @@ fun BulkTransferView(
                     Log.d("BulkTransferView", "BulkTransferView: $state")
                 }
             )
-            if (state.isNfcEnabled){
+            if (state.isNfcEnabled) {
                 ExpandableCard(
                     selectedItem = state.selectedMachine?.name ?: "",
                     onclick = {
@@ -121,10 +121,10 @@ fun BulkTransferView(
             modifier = Modifier
                 .align(Alignment.BottomEnd)
                 .padding(bottom = 74.dp)
-        ){
+        ) {
             CustomButton(
                 title = "Transferi Başlat",
-                onClick = {viewModel.handleAction(BulkTransferAction.StartTransferButtonClick)}
+                onClick = { viewModel.handleAction(BulkTransferAction.StartTransferButtonClick) }
             )
         }
         AnimatedVisibility(visible = state.isLoading) {
@@ -139,14 +139,14 @@ fun BulkTransferView(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center,
 
-                ) {
+                    ) {
                     CircularProgressIndicator(color = Color.White)
                     if (!state.isNfcEnabled) {
                         Text(
                             "İşlemlere Başlamadan Önce Lütfen Kartınızı Okutunuz...",
                             textAlign = TextAlign.Center
                         )
-                    } else if(state.selectedPersonnel?.id!!.isEmpty()) {
+                    } else if (state.selectedPersonnel?.id!!.isEmpty()) {
                         Text(
                             "Kartınız Okundu Lütfen Bekleyiniz...",
                             textAlign = TextAlign.Center
@@ -173,7 +173,7 @@ fun BulkTransferView(
                 onBackButtonClick = {
                     viewModel.handleAction(BulkTransferAction.CloseDetailPanel)
                 },
-                onNextButtonTap = { viewModel.handleAction(BulkTransferAction.OnNextButtonTap) }
+                onCreateOrderButtonClick = { viewModel.handleAction(BulkTransferAction.OnCreateOrderButtonClick) }
             )
         }
     }

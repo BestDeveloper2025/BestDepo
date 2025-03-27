@@ -215,7 +215,7 @@ class TransferWithReceteViewModel @Inject constructor(
                     is NetworkResult.Success<*> -> {
                         val inventoryData = result.data
                         if (inventoryData != null) {
-                            if (inventoryData.durum == "OK") {
+                            if (inventoryData.durum == "OK" && inventoryData.receteMiktari != 0) {
                                 _state.value =
                                     _state.value.copy(
                                         panelData = result.data,
@@ -224,7 +224,11 @@ class TransferWithReceteViewModel @Inject constructor(
                                     )
                                 barcodeManager.clearBarcodeData()
                                 openDetailPanel()
-                            } else {
+                            } else if (inventoryData.durum == "OK" && inventoryData.receteMiktari == 0){
+                                _effect.emit(TransferWithReceteEffect.ShowToast("Ürün Seçmiş Olduğunuz Makina Reçetesinde Bulunmuyor"))
+                                _state.value = _state.value.copy(panelVisibility = false, isLoading = false)
+                            }
+                            else {
                                 _state.value = _state.value.copy(isLoading = false)
                                 _effect.emit(TransferWithReceteEffect.ShowToast("Reçete Bulunamadı"))
                             }

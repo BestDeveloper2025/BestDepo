@@ -3,7 +3,6 @@ package com.bestmakina.depotakip.presentation.ui.view.bulkTransfer.viewmodel
 import android.nfc.Tag
 import android.util.Log
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.bestmakina.depotakip.common.base.BaseNfcViewModel
 import com.bestmakina.depotakip.common.model.TransferItemModel
 import com.bestmakina.depotakip.common.network.NetworkResult
@@ -18,7 +17,6 @@ import com.bestmakina.depotakip.domain.usecase.cache.GetAllMachineDataUseCase
 import com.bestmakina.depotakip.domain.usecase.inventory.BulkTransferWithReceteUseCase
 import com.bestmakina.depotakip.domain.usecase.inventory.GetInventoryDataUseCase
 import com.bestmakina.depotakip.domain.usecase.inventory.GetMachinePrescriptionUseCase
-import com.bestmakina.depotakip.presentation.ui.view.TransferWithRecete.TransferWithReceteEffect
 import com.bestmakina.depotakip.presentation.ui.view.bulkTransfer.BulkTransferAction
 import com.bestmakina.depotakip.presentation.ui.view.bulkTransfer.BulkTransferEffect
 import com.bestmakina.depotakip.presentation.ui.view.bulkTransfer.BulkTransferState
@@ -57,21 +55,20 @@ class BulkTransferViewModel @Inject constructor(
     private val _depoKodu = sharedPreferencesHelper.getData(PreferencesKeys.WareHouseName, "")
     private val _terminalKullanici = sharedPreferencesHelper.getData(PreferencesKeys.UserId, "")
 
-
     fun handleAction(action: BulkTransferAction) {
         when (action) {
             is BulkTransferAction.ChangePanelVisibility -> changeListPanelVisibility()
             is BulkTransferAction.LoadMachineData -> loadMachineData(action.machineData)
             is BulkTransferAction.StartTransferButtonClick -> startTransfer()
             is BulkTransferAction.TransferProduct -> transferSelectedItem(action.quantity, action.stockCode)
-            BulkTransferAction.CloseDetailPanel -> closeDetailPanel()
-            BulkTransferAction.OnNextButtonTap -> onNextButtonTap()
+            is BulkTransferAction.CloseDetailPanel -> closeDetailPanel()
+            is BulkTransferAction.OnCreateOrderButtonClick -> createOrderButtonClick()
         }
     }
 
     init {
         //silinecek
-        //getMachineData()
+        getMachineData()
         observeNfcTags()
         preparePage()
     }
@@ -200,13 +197,18 @@ class BulkTransferViewModel @Inject constructor(
                                     "OK" -> {
                                         _state.value =
                                             it.stockCodes?.let { it1 -> _state.value.copy(stockCodes = it1) }!!
-                                        _state.value = _state.value.copy(isLoading = false, listState = it.counter)
+                                        _state.value = _state.value.copy(
+                                            isLoading = false,
+                                            listState = it.counter
+                                        )
                                         getInventoryData(it.stockCodes[state.value.listState])
                                     }
+
                                     "Hata" -> {
                                         _effect.emit(BulkTransferEffect.ShowToast("Reçete Bağlı Değil"))
                                         _state.value = _state.value.copy(isLoading = false)
                                     }
+
                                     else -> {
                                         _effect.emit(BulkTransferEffect.ShowToast("Reçete Alınırken Bir Hata Oluştu"))
                                         _state.value = _state.value.copy(isLoading = false)
@@ -294,7 +296,7 @@ class BulkTransferViewModel @Inject constructor(
                 DepoKodu = _depoKodu,
                 StokKodu = stockCode,
                 TransferMiktari = quantity.toString(),
-                SayacSira = state.value.listState
+                SayacSira = state.value.listState + 1
             )
 
             bulkTransferWithReceteUseCase(request)
@@ -304,25 +306,36 @@ class BulkTransferViewModel @Inject constructor(
                         is NetworkResult.Loading -> {
                             _state.value = _state.value.copy(isLoading = true)
                         }
+
                         is NetworkResult.Success -> {
                             result.data?.let {
                                 if (it.Durum == "OK") {
                                     _effect.emit(BulkTransferEffect.ShowToast("Transfer Başarılı"))
 
-                                    if (state.value.listState + 1 == state.value.stockCodes.size){
-                                        _effect.emit(BulkTransferEffect.ShowToast("Reçete Sonuna Ulaşıldı"))
-                                        _state.value = _state.value.copy(
-                                            isLoading = false,
-                                            searchablePanelVisibility = false,
-                                        )
+                                    val currentProductDetail = state.value.currentProductDetail ?: return@collectLatest
+                                    val isLastItem = state.value.listState + 1 == state.value.stockCodes.size
+                                    val montajaVerilen = currentProductDetail.montajaVerilen ?: return@collectLatest
+                                    val isQuantityEqualToRecipe = montajaVerilen + quantity == currentProductDetail.receteMiktari
+
+                                    if (isQuantityEqualToRecipe) {
+                                        if (isLastItem) {
+                                            _effect.emit(BulkTransferEffect.ShowToast("Reçete Sonuna Ulaşıldı"))
+                                            _state.value = _state.value.copy(
+                                                isLoading = false,
+                                                searchablePanelVisibility = false
+                                            )
+                                        } else {
+                                            val nextListState = state.value.listState + 1
+                                            _state.value = _state.value.copy(
+                                                isLoading = false,
+                                                listState = nextListState
+                                            )
+                                            getInventoryData(state.value.stockCodes[nextListState])
+                                        }
                                     } else {
-                                        val nextListState = state.value.listState + 1
-                                        _state.value = _state.value.copy(
-                                            isLoading = false,
-                                            listState = nextListState
-                                        )
-                                        getInventoryData(state.value.stockCodes[nextListState])
+                                        _effect.emit(BulkTransferEffect.ShowToast("Bir Sonraki Malzemeye Geçmeden Önce Sipariş Oluşturun"))
                                     }
+
 
                                 } else {
                                     _effect.emit(BulkTransferEffect.ShowToast("Transfer Başarısız"))
@@ -330,6 +343,7 @@ class BulkTransferViewModel @Inject constructor(
                                 }
                             }
                         }
+
                         is NetworkResult.Error -> {
                             _effect.emit(BulkTransferEffect.ShowToast("Transfer Başarısız"))
                             _state.value = _state.value.copy(isLoading = false)
@@ -339,16 +353,8 @@ class BulkTransferViewModel @Inject constructor(
         }
     }
 
-    private fun onNextButtonTap(){
-        if (state.value.listState + 1 == state.value.stockCodes.size ){
-            viewModelScope.launch {
-                _effect.emit(BulkTransferEffect.ShowToast("Reçete Sonuna Ulaşıldı"))
-            }
-        }else {
-            _state.value = _state.value.copy(listState = state.value.listState + 1)
-            Log.d("BulkTransferViewModel", "onNextButtonClick: ${state.value.listState}")
-            getInventoryData(_state.value.stockCodes[state.value.listState])
-        }
+    private fun createOrderButtonClick() {
+        Log.d("BulkTransferViewModel", "createOrderButtonClick: tıklandı")
     }
 
     private fun closeDetailPanel() {

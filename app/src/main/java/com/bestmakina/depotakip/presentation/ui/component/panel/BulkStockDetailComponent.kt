@@ -43,12 +43,14 @@ fun BulkStockDetailPanel(
     minStock: Int = 0,
     onclick: (Int, String) -> Unit,
     onBackButtonClick: () -> Unit,
-    onNextButtonTap: () -> Unit
+    onCreateOrderButtonClick: () -> Unit
 ) {
 
     val buttonClickable = remember { mutableStateOf(true) }
     var quantity by remember { mutableIntStateOf(0) }
     val context = LocalContext.current
+    var showConfirmationDialog by remember { mutableStateOf(false) }
+    var showCreateOrderDialog by remember { mutableStateOf(false) }
 
     val currentStockCode by rememberUpdatedState(stockCode)
     val currentBarcode by rememberUpdatedState(barcode)
@@ -81,7 +83,7 @@ fun BulkStockDetailPanel(
         }
     }
 
-    var showConfirmationDialog by remember { mutableStateOf(false) }
+
 
     Dialog(
         onDismissRequest = onBackButtonClick,
@@ -102,20 +104,6 @@ fun BulkStockDetailPanel(
                     .fillMaxSize()
                     .padding(horizontal = 1.dp),
             ) {
-                Box(
-                    modifier = Modifier
-                        .size(55.dp)
-                        .padding(4.dp)
-                        .background(MaterialTheme.colorScheme.surface, shape = RoundedCornerShape(8.dp))
-                        .clickable { onNextButtonTap() },
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        painter = painterResource(R.drawable.up_arrow),
-                        contentDescription = "Increase",
-                        tint = Color.Black,
-                    )
-                }
                 Spacer(modifier = Modifier.height(2.dp))
                 TableStockInfo(
                     currentStockCode,
@@ -134,13 +122,11 @@ fun BulkStockDetailPanel(
                 ) {
                     Button(
                         onClick = {
-                            if (buttonClickable.value) {
-                                showConfirmationDialog = true
-                            } else {
-                                context.toastShort("Lütfen Barkod Okutunuz")
-                            }
+                            showCreateOrderDialog = true
                         },
-                        modifier = Modifier.weight(1f).padding(horizontal = 1.dp),
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(horizontal = 1.dp),
                         colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.surface),
                         shape = RoundedCornerShape(8.dp)
                     ) {
@@ -150,7 +136,9 @@ fun BulkStockDetailPanel(
                         onClick = {
                             showConfirmationDialog = true
                         },
-                        modifier = Modifier.weight(1f).padding(horizontal = 1.dp),
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(horizontal = 1.dp),
                         colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.surface),
                         shape = RoundedCornerShape(8.dp)
                     ) {
@@ -237,6 +225,30 @@ fun BulkStockDetailPanel(
             dismissButton = {
                 OutlinedButton(
                     onClick = { showConfirmationDialog = false }
+                ) {
+                    Text("İptal")
+                }
+            }
+        )
+    }
+
+    AnimatedVisibility(visible = showCreateOrderDialog) {
+        AlertDialog(
+            containerColor = Color.Black,
+            onDismissRequest = { showCreateOrderDialog = false },
+            title = { Text("Onay", fontWeight = FontWeight.Bold) },
+            text = { Text("$quantity adet $currentStockName Sipariş Oluşturmak İstiyor Musunuz?") },
+            confirmButton = {
+                Button(
+                    onClick = { onCreateOrderButtonClick() },
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                ) {
+                    Text("Evet")
+                }
+            },
+            dismissButton = {
+                OutlinedButton(
+                    onClick = { showCreateOrderDialog = false }
                 ) {
                     Text("İptal")
                 }
