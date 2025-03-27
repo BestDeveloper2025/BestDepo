@@ -6,6 +6,7 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
@@ -15,12 +16,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.compose.ui.zIndex
+import com.bestmakina.depotakip.R
 import com.bestmakina.depotakip.common.util.extension.toastShort
 import com.bestmakina.depotakip.presentation.ui.component.custom.QuantitySelector
 import com.bestmakina.depotakip.presentation.ui.component.custom.TableStockInfo
@@ -40,6 +43,7 @@ fun BulkStockDetailPanel(
     minStock: Int = 0,
     onclick: (Int, String) -> Unit,
     onBackButtonClick: () -> Unit,
+    onNextButtonTap: () -> Unit
 ) {
 
     val buttonClickable = remember { mutableStateOf(true) }
@@ -56,6 +60,7 @@ fun BulkStockDetailPanel(
     val currentVirtualSafe by rememberUpdatedState(virtualSafe)
     val currentImageData by rememberUpdatedState(imageData)
     val montajaVerilen by rememberUpdatedState(montajaVerilen)
+    val currentMinStock by rememberUpdatedState(minStock)
 
     LaunchedEffect(
         currentStockCode, currentBarcode, currentShelfCode,
@@ -97,6 +102,20 @@ fun BulkStockDetailPanel(
                     .fillMaxSize()
                     .padding(horizontal = 1.dp),
             ) {
+                Box(
+                    modifier = Modifier
+                        .size(55.dp)
+                        .padding(4.dp)
+                        .background(MaterialTheme.colorScheme.surface, shape = RoundedCornerShape(8.dp))
+                        .clickable { onNextButtonTap() },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.up_arrow),
+                        contentDescription = "Increase",
+                        tint = Color.Black,
+                    )
+                }
                 Spacer(modifier = Modifier.height(2.dp))
                 TableStockInfo(
                     currentStockCode,
@@ -108,7 +127,7 @@ fun BulkStockDetailPanel(
                     currentLowerDepotAmount,
                     currentVirtualSafe,
                     montajaVerilen,
-                    minStock
+                    currentMinStock
                 )
                 Row(
                     modifier = Modifier.fillMaxWidth()
@@ -129,7 +148,7 @@ fun BulkStockDetailPanel(
                     }
                     Button(
                         onClick = {
-                            TODO()
+                            showConfirmationDialog = true
                         },
                         modifier = Modifier.weight(1f).padding(horizontal = 1.dp),
                         colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.surface),

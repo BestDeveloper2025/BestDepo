@@ -1,5 +1,4 @@
 package com.bestmakina.depotakip.data.model.response.inventory
-
 import com.google.gson.annotations.SerializedName
 
 data class MachinePrescriptionsDto(
@@ -7,6 +6,6 @@ data class MachinePrescriptionsDto(
     val durum: String,
     @SerializedName("StokKoduListe")
     val stockCodeListDto: List<StockCodeListDto>? = null,
-    @SerializedName("SayacNo")
+    @SerializedName("SayacSira")
     val counter: Int,
 )

@@ -118,7 +118,9 @@ fun BulkTransferView(
             }
         }
         Box(
-            modifier = Modifier.align(Alignment.BottomEnd).padding(bottom = 74.dp)
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(bottom = 74.dp)
         ){
             CustomButton(
                 title = "Transferi Başlat",
@@ -130,7 +132,7 @@ fun BulkTransferView(
                 modifier = Modifier
                     .fillMaxSize()
                     .background(Color.Black.copy(alpha = 0.7f))
-                    .clickable(enabled = false) {  },
+                    .clickable(enabled = false) { },
                 contentAlignment = Alignment.Center
             ) {
                 Column(
@@ -166,11 +168,12 @@ fun BulkTransferView(
                 imageData = state.currentProductDetail?.resimData ?: "",
                 montajaVerilen = state.currentProductDetail?.montajaVerilen ?: 0,
                 onclick = { quantity, stockCode ->
-                    Log.d("BulkTransferView", "BulkTransferView: $quantity, $stockCode")
+                    viewModel.handleAction(BulkTransferAction.TransferProduct(quantity, stockCode))
                 },
                 onBackButtonClick = {
                     viewModel.handleAction(BulkTransferAction.CloseDetailPanel)
-                }
+                },
+                onNextButtonTap = { viewModel.handleAction(BulkTransferAction.OnNextButtonTap) }
             )
         }
     }

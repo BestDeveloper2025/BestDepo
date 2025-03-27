@@ -20,28 +20,30 @@ import com.bestmakina.depotakip.common.util.extension.removeLeadingZeros
 
 @Composable
 fun TableStockInfo(
-    stockCode: String,
-    barcode: String,
-    shelfCode: String,
-    stockName: String,
-    recipeAmount: Int,
-    upperDepotAmount: Int,
-    lowerDepotAmount: Int,
-    virtualSafe: Int,
-    montajaVerilen: Int,
-    minStock: Int
+    stockCode: String? = null,
+    barcode: String? = null,
+    shelfCode: String? = null,
+    stockName: String? = null,
+    recipeAmount: Int? = null,
+    upperDepotAmount: Int? = null,
+    lowerDepotAmount: Int? = null,
+    virtualSafe: Int? = null,
+    montajaVerilen: Int? = null,
+    minStock: Int? = null
 ) {
-    val stockInfo = listOf(
-        "StokKodu" to stockCode,
-        "BarkodNo" to barcode,
-        "RafKodu" to shelfCode,
-        "SanalKasa" to virtualSafe.toString(),
-        "ÜstDepo" to upperDepotAmount.toString(),
-        "AltDepo" to lowerDepotAmount.toString(),
-        "Reçete" to recipeAmount.toString(),
-        "Montaja Verilen" to montajaVerilen.toString(),
-        "Minimum Stok" to minStock.toString()
+    val stockInfo = listOfNotNull(
+        stockCode?.let { "StokKodu" to it },
+        barcode?.let { "BarkodNo" to it },
+        shelfCode?.let { "RafKodu" to it },
+        virtualSafe?.toString()?.let { "SanalKasa" to it },
+        upperDepotAmount?.toString()?.let { "ÜstDepo" to it },
+        lowerDepotAmount?.toString()?.let { "AltDepo" to it },
+        recipeAmount?.toString()?.let { "Reçete" to it },
+        montajaVerilen?.toString()?.let { "Montaja Verilen" to it },
+        minStock?.toString()?.let { "Minimum Stok" to it }
     )
+
+    if (stockInfo.isEmpty() && stockName.isNullOrBlank()) return
 
     Column(
         modifier = Modifier
@@ -50,8 +52,7 @@ fun TableStockInfo(
     ) {
         for (i in stockInfo.indices step 2) {
             Row(
-                modifier = Modifier
-                    .fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 for (j in 0 until 2) {
@@ -70,9 +71,7 @@ fun TableStockInfo(
                                 color = Color.Black,
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .background(
-                                        Color(0xB39A9A9A),
-                                    )
+                                    .background(Color(0xB39A9A9A))
                                     .padding(vertical = 1.dp, horizontal = 2.dp)
                             )
                             Text(
@@ -92,20 +91,22 @@ fun TableStockInfo(
             }
         }
 
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 4.dp, vertical = 4.dp)
-        ) {
-            Row(
-                modifier = Modifier.padding(vertical = 1.dp),
-                verticalAlignment = Alignment.CenterVertically
+        stockName?.let {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 4.dp, vertical = 4.dp)
             ) {
-                Text(
-                    stockName,
-                    style = MaterialTheme.typography.labelMedium,
-                    color = Color.White
-                )
+                Row(
+                    modifier = Modifier.padding(vertical = 1.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        it,
+                        style = MaterialTheme.typography.labelMedium,
+                        color = Color.White
+                    )
+                }
             }
         }
     }

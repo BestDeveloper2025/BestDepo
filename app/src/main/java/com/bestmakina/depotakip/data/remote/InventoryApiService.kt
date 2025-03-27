@@ -1,5 +1,6 @@
 package com.bestmakina.depotakip.data.remote
 
+import com.bestmakina.depotakip.data.model.request.inventory.BulkTransferWithRecereRequest
 import com.bestmakina.depotakip.data.model.request.inventory.GetInventoryDataRequest
 import com.bestmakina.depotakip.data.model.request.inventory.MachineSerialRequest
 import com.bestmakina.depotakip.data.model.request.inventory.TransferWithReceteRequest
@@ -19,5 +20,8 @@ interface InventoryApiService {
 
     @POST("BestUretim/hs/Best/MakinaSeriRecete")
     suspend fun getMachinePrescriptions(@Body request: MachineSerialRequest): Response<MachinePrescriptionsDto>
+
+    @POST("BestUretim/hs/Best/DepoTransferiRecete")
+    suspend fun bulkTransferWithRecete(@Body request: BulkTransferWithRecereRequest): Response<TransferWithReceteResponse>
 
 }

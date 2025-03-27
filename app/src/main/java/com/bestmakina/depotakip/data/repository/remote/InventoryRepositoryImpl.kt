@@ -2,6 +2,7 @@ package com.bestmakina.depotakip.data.repository.remote
 
 import com.bestmakina.depotakip.common.network.NetworkResult
 import com.bestmakina.depotakip.data.mapper.toDomain
+import com.bestmakina.depotakip.data.model.request.inventory.BulkTransferWithRecereRequest
 import com.bestmakina.depotakip.data.model.request.inventory.GetInventoryDataRequest
 import com.bestmakina.depotakip.data.model.request.inventory.MachineSerialRequest
 import com.bestmakina.depotakip.data.model.request.inventory.TransferWithReceteRequest
@@ -65,6 +66,22 @@ class InventoryRepositoryImpl @Inject constructor(
             }
         }catch (e: Exception){
             emit(NetworkResult.Error("Exception occurred: ${e.message}"))
+        }
+    }
+
+    override suspend fun bulkTransferWithRecete(request: BulkTransferWithRecereRequest): Flow<NetworkResult<TransferWithReceteResponse>> = flow{
+        emit(NetworkResult.Loading())
+        try {
+            val result = inventoryService.bulkTransferWithRecete(request)
+            val responseBody = result.body()
+            if (responseBody != null) {
+                emit(NetworkResult.Success(responseBody))
+            } else {
+                emit(NetworkResult.Error("Response body is null"))
+            }
+
+        }catch (e: Exception) {
+            emit(NetworkResult.Error("Transfer Yapılırken Bir Hata Oluştu: ${e.message}"))
         }
     }
 }

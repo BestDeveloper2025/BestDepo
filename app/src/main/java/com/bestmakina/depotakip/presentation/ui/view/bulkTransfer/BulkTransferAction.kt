@@ -5,8 +5,7 @@ sealed class BulkTransferAction {
     data object ChangePanelVisibility : BulkTransferAction()
     data class LoadMachineData(val machineData: TransferItemModel) : BulkTransferAction()
     data object StartTransferButtonClick : BulkTransferAction()
-    data object OnNextButtonClick : BulkTransferAction()
-    data object OnBackButtonClick : BulkTransferAction()
-    data object TransferProduct : BulkTransferAction()
+    data class TransferProduct(val quantity: Int, val stockCode: String) : BulkTransferAction()
     data object CloseDetailPanel : BulkTransferAction()
+    data object OnNextButtonTap : BulkTransferAction()
 }

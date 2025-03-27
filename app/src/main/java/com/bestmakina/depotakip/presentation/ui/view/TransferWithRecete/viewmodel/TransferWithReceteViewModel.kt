@@ -15,7 +15,7 @@ import com.bestmakina.depotakip.domain.manager.BarcodeManager
 import com.bestmakina.depotakip.domain.manager.NfcManager
 import com.bestmakina.depotakip.domain.model.PreferencesKeys
 import com.bestmakina.depotakip.domain.usecase.inventory.GetInventoryDataUseCase
-import com.bestmakina.depotakip.domain.usecase.TransferWithReceteUseCase
+import com.bestmakina.depotakip.domain.usecase.inventory.TransferWithReceteUseCase
 import com.bestmakina.depotakip.domain.usecase.cache.GetAllMachineDataUseCase
 import com.bestmakina.depotakip.domain.usecase.cache.GetAllRecipientUseCase
 import com.bestmakina.depotakip.domain.usecase.cache.GetAllTransferReasonUseCase
@@ -180,6 +180,7 @@ class TransferWithReceteViewModel @Inject constructor(
                 val personnelList = personnelFlow.first()
                 val transferNedeniList = transferNedeniFlow.first()
                 val machineList = machineFlow.first()
+                Log.d("TransferWithRecete", "preparePage:$transferNedeniList")
 
                 _state.value = _state.value.copy(
                     personnelList = personnelList,
@@ -272,7 +273,7 @@ class TransferWithReceteViewModel @Inject constructor(
                 TeslimAlan = state.value.selectedPersonnel!!.id,
                 DepoKodu = _depoKodu,
                 StokKodu = stockCode,
-                TransferMiktari = quantity.toString()
+                TransferMiktari = quantity.toString(),
             )
 
             Log.d("TransferWithReceteRequest", request.toString())

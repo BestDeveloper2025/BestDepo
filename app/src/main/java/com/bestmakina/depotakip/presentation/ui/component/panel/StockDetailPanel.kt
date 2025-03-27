@@ -56,6 +56,7 @@ fun StockDetailPanel(
     val currentVirtualSafe by rememberUpdatedState(virtualSafe)
     val currentImageData by rememberUpdatedState(imageData)
     val montajaVerilen by rememberUpdatedState(montajaVerilen)
+    val currentMinStock by rememberUpdatedState(minStock)
 
     LaunchedEffect(
         currentStockCode, currentBarcode, currentShelfCode,
@@ -108,7 +109,7 @@ fun StockDetailPanel(
                     currentLowerDepotAmount,
                     currentVirtualSafe,
                     montajaVerilen,
-                    minStock
+                    currentMinStock
                 )
                 Button(
                     onClick = {

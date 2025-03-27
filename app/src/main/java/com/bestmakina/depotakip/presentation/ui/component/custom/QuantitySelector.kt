@@ -45,9 +45,9 @@ fun QuantitySelector(
     quantity: Int,
     onDecrease: () -> Unit,
     onIncrease: () -> Unit,
-    recipeAmount: Int,
-    upperDepotAmount: Int,
-    montajaVerilen: Int,
+    recipeAmount: Int? = null,
+    upperDepotAmount: Int? = null,
+    montajaVerilen: Int? = null,
     onQuantityChanged: (Int) -> Unit
 ) {
     val context = LocalContext.current
@@ -79,7 +79,6 @@ fun QuantitySelector(
             OutlinedTextField(
                 value = editText,
                 onValueChange = { newValue ->
-                    // Sadece rakamları kabul et
                     if (newValue.isEmpty() || newValue.all { it.isDigit() }) {
                         editText = newValue
                     }
@@ -174,9 +173,9 @@ fun QuantitySelector(
 
 private fun validateQuantity(
     newValue: Int,
-    recipeAmount: Int,
-    upperDepotAmount: Int,
-    montajaVerilen: Int,
+    recipeAmount: Int? = null,
+    upperDepotAmount: Int? = null,
+    montajaVerilen: Int? = null,
     context: Context
 ): Int {
     return when {
@@ -185,17 +184,17 @@ private fun validateQuantity(
             0
         }
 
-        newValue > recipeAmount -> {
+        recipeAmount != null && newValue > recipeAmount -> {
             context.toastShort("Miktar reçete miktarından fazla olamaz")
             -1
         }
 
-        newValue > upperDepotAmount -> {
+        upperDepotAmount != null && newValue > upperDepotAmount -> {
             context.toastShort("Miktar stok adetinden fazla olamaz")
             -1
         }
 
-        newValue > (recipeAmount - montajaVerilen) -> {
+        recipeAmount != null && montajaVerilen != null && newValue > (recipeAmount - montajaVerilen) -> {
             context.toastShort("Daha fazla transfer yapamazsınız")
             -1
         }

@@ -8,12 +8,14 @@ import com.bestmakina.depotakip.common.base.BaseNfcViewModel
 import com.bestmakina.depotakip.common.model.TransferItemModel
 import com.bestmakina.depotakip.common.network.NetworkResult
 import com.bestmakina.depotakip.data.local.SharedPreferencesHelper
+import com.bestmakina.depotakip.data.model.request.inventory.BulkTransferWithRecereRequest
 import com.bestmakina.depotakip.data.model.request.inventory.GetInventoryDataRequest
 import com.bestmakina.depotakip.data.model.request.inventory.MachineSerialRequest
 import com.bestmakina.depotakip.domain.manager.NfcManager
 import com.bestmakina.depotakip.domain.model.PreferencesKeys
 import com.bestmakina.depotakip.domain.usecase.personnel.GetNameByBarcodeUseCase
 import com.bestmakina.depotakip.domain.usecase.cache.GetAllMachineDataUseCase
+import com.bestmakina.depotakip.domain.usecase.inventory.BulkTransferWithReceteUseCase
 import com.bestmakina.depotakip.domain.usecase.inventory.GetInventoryDataUseCase
 import com.bestmakina.depotakip.domain.usecase.inventory.GetMachinePrescriptionUseCase
 import com.bestmakina.depotakip.presentation.ui.view.TransferWithRecete.TransferWithReceteEffect
@@ -28,6 +30,7 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -39,7 +42,8 @@ class BulkTransferViewModel @Inject constructor(
     private val getNameToBarcodeUseCase: GetNameByBarcodeUseCase,
     private val getMachineDataUseCase: GetAllMachineDataUseCase,
     private val getMachinePrescriptionUseCase: GetMachinePrescriptionUseCase,
-    private val getInventoryDataUseCase: GetInventoryDataUseCase
+    private val getInventoryDataUseCase: GetInventoryDataUseCase,
+    private val bulkTransferWithReceteUseCase: BulkTransferWithReceteUseCase
 ) : BaseNfcViewModel(nfcManager) {
 
     private val _state = MutableStateFlow(BulkTransferState())
@@ -50,20 +54,24 @@ class BulkTransferViewModel @Inject constructor(
 
     private val _tagData = MutableStateFlow<String?>(null)
 
+    private val _depoKodu = sharedPreferencesHelper.getData(PreferencesKeys.WareHouseName, "")
+    private val _terminalKullanici = sharedPreferencesHelper.getData(PreferencesKeys.UserId, "")
+
+
     fun handleAction(action: BulkTransferAction) {
         when (action) {
             is BulkTransferAction.ChangePanelVisibility -> changeListPanelVisibility()
             is BulkTransferAction.LoadMachineData -> loadMachineData(action.machineData)
             is BulkTransferAction.StartTransferButtonClick -> startTransfer()
-            is BulkTransferAction.OnBackButtonClick -> onBackButtonClick()
-            is BulkTransferAction.OnNextButtonClick -> onNextButtonClick()
-            is BulkTransferAction.TransferProduct -> TODO()
+            is BulkTransferAction.TransferProduct -> transferSelectedItem(action.quantity, action.stockCode)
             BulkTransferAction.CloseDetailPanel -> closeDetailPanel()
+            BulkTransferAction.OnNextButtonTap -> onNextButtonTap()
         }
     }
 
     init {
         //silinecek
+        //getMachineData()
         observeNfcTags()
         preparePage()
     }
@@ -192,15 +200,13 @@ class BulkTransferViewModel @Inject constructor(
                                     "OK" -> {
                                         _state.value =
                                             it.stockCodes?.let { it1 -> _state.value.copy(stockCodes = it1) }!!
+                                        _state.value = _state.value.copy(isLoading = false, listState = it.counter)
                                         getInventoryData(it.stockCodes[state.value.listState])
-                                        _state.value = _state.value.copy(isLoading = false)
                                     }
-
                                     "Hata" -> {
                                         _effect.emit(BulkTransferEffect.ShowToast("Reçete Bağlı Değil"))
                                         _state.value = _state.value.copy(isLoading = false)
                                     }
-
                                     else -> {
                                         _effect.emit(BulkTransferEffect.ShowToast("Reçete Alınırken Bir Hata Oluştu"))
                                         _state.value = _state.value.copy(isLoading = false)
@@ -252,16 +258,13 @@ class BulkTransferViewModel @Inject constructor(
                     }
 
                     is NetworkResult.Success<*> -> {
-                        Log.d("TransferWithRecete", "NetworkResult.Success işte burda: ${result.data?.minStock}")
                         val inventoryData = result.data
                         if (inventoryData != null) {
                             if (inventoryData.durum == "OK") {
-                                val tempListState = state.value.listState
                                 _state.value =
                                     _state.value.copy(
                                         currentProductDetail = result.data,
                                         isLoading = false,
-                                        listState = tempListState + 1,
                                         detailPanelVisibility = true
                                     )
                             } else {
@@ -281,18 +284,81 @@ class BulkTransferViewModel @Inject constructor(
         }
     }
 
-    private fun onNextButtonClick(){
-        val tempListState = state.value.listState + 1
-        getInventoryData(_state.value.stockCodes[tempListState])
+    private fun transferSelectedItem(quantity: Int, stockCode: String) {
+        viewModelScope.launch {
+            val request = BulkTransferWithRecereRequest(
+                MakinaSeri = state.value.selectedMachine!!.id,
+                TransferNedeni = "1",
+                TerminalUser = _terminalKullanici,
+                TeslimAlan = state.value.selectedPersonnel!!.id,
+                DepoKodu = _depoKodu,
+                StokKodu = stockCode,
+                TransferMiktari = quantity.toString(),
+                SayacSira = state.value.listState
+            )
+
+            bulkTransferWithReceteUseCase(request)
+                .flowOn(Dispatchers.IO)
+                .collectLatest { result ->
+                    when (result) {
+                        is NetworkResult.Loading -> {
+                            _state.value = _state.value.copy(isLoading = true)
+                        }
+                        is NetworkResult.Success -> {
+                            result.data?.let {
+                                if (it.Durum == "OK") {
+                                    _effect.emit(BulkTransferEffect.ShowToast("Transfer Başarılı"))
+
+                                    if (state.value.listState + 1 == state.value.stockCodes.size){
+                                        _effect.emit(BulkTransferEffect.ShowToast("Reçete Sonuna Ulaşıldı"))
+                                        _state.value = _state.value.copy(
+                                            isLoading = false,
+                                            searchablePanelVisibility = false,
+                                        )
+                                    } else {
+                                        val nextListState = state.value.listState + 1
+                                        _state.value = _state.value.copy(
+                                            isLoading = false,
+                                            listState = nextListState
+                                        )
+                                        getInventoryData(state.value.stockCodes[nextListState])
+                                    }
+
+                                } else {
+                                    _effect.emit(BulkTransferEffect.ShowToast("Transfer Başarısız"))
+                                    _state.value = _state.value.copy(isLoading = false)
+                                }
+                            }
+                        }
+                        is NetworkResult.Error -> {
+                            _effect.emit(BulkTransferEffect.ShowToast("Transfer Başarısız"))
+                            _state.value = _state.value.copy(isLoading = false)
+                        }
+                    }
+                }
+        }
     }
 
-    private fun onBackButtonClick(){
-        val tempListState = state.value.listState - 1
-        Log.d("BulkTransferViewModel", "onBackButtonClick: $tempListState")
-        getInventoryData(_state.value.stockCodes[tempListState])
+    private fun onNextButtonTap(){
+        if (state.value.listState + 1 == state.value.stockCodes.size ){
+            viewModelScope.launch {
+                _effect.emit(BulkTransferEffect.ShowToast("Reçete Sonuna Ulaşıldı"))
+            }
+        }else {
+            _state.value = _state.value.copy(listState = state.value.listState + 1)
+            Log.d("BulkTransferViewModel", "onNextButtonClick: ${state.value.listState}")
+            getInventoryData(_state.value.stockCodes[state.value.listState])
+        }
     }
 
     private fun closeDetailPanel() {
         _state.value = _state.value.copy(detailPanelVisibility = false)
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        viewModelScope.launch {
+            nfcManager.forceCloseConnections()
+        }
     }
 }

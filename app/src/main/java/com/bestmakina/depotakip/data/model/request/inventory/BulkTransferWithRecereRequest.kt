@@ -1,6 +1,6 @@
 package com.bestmakina.depotakip.data.model.request.inventory
 
-data class TransferWithReceteRequest(
+data class BulkTransferWithRecereRequest(
     val DepoKodu: String,
     val MakinaSeri: String,
     val StokKodu: String,
@@ -8,5 +8,5 @@ data class TransferWithReceteRequest(
     val TeslimAlan: String,
     val TransferMiktari: String,
     val TransferNedeni: String,
-//    val SayacSira: Int?
+    val SayacSira: Int?
 )
