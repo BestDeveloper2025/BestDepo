@@ -7,7 +7,9 @@ import android.nfc.Tag
 import android.util.Log
 import androidx.lifecycle.viewModelScope
 import com.bestmakina.depotakip.common.base.BaseNfcViewModel
+import com.bestmakina.depotakip.common.model.TransferItemModel
 import com.bestmakina.depotakip.domain.manager.NfcManager
+import com.bestmakina.depotakip.domain.usecase.cache.GetAllRecipientUseCase
 import com.bestmakina.depotakip.presentation.ui.view.nftregistration.NftRegistrationAction
 import com.bestmakina.depotakip.presentation.ui.view.nftregistration.NftRegistrationEffect
 import com.bestmakina.depotakip.presentation.ui.view.nftregistration.NftRegistrationState
@@ -15,11 +17,14 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class NftRegistrationViewModel @Inject constructor(
+    private val getTeslimAlanUseCase: GetAllRecipientUseCase,
     private val nfcManager: NfcManager
 ) : BaseNfcViewModel(nfcManager) {
 
@@ -30,10 +35,10 @@ class NftRegistrationViewModel @Inject constructor(
     val effect = _effect.asSharedFlow()
 
     private val _tagData = MutableStateFlow<String?>(null)
-    val tagData = _tagData.asStateFlow()
 
     init {
         observeNfcTags()
+        preparePage()
     }
 
     fun handleAction(action: NftRegistrationAction) {
@@ -50,6 +55,30 @@ class NftRegistrationViewModel @Inject constructor(
                     _effect.emit(NftRegistrationEffect.ShowToast("Lütfen NFC kartınızı cihazınıza yaklaştırın"))
                 }
             }
+
+            is NftRegistrationAction.ChangePanelVisibility -> changePanelVisibility()
+            is NftRegistrationAction.LoadPersonnelData -> loadPersonnelData(action.selectedPersonnel)
+        }
+    }
+
+    private fun preparePage(){
+        viewModelScope.launch {
+            try {
+                val personnelFlow = getTeslimAlanUseCase().map { entityList ->
+                    entityList.map { entity ->
+                        TransferItemModel(
+                            id = entity.Kod ?: "",
+                            name = entity.TeslimAlan ?: ""
+                        )
+                    }
+                }
+                val personnelList = personnelFlow.first()
+                _state.value = _state.value.copy(personnelList = personnelList)
+            }catch (e: Exception){
+                Log.e("NftRegistration", "Error fetching personnel list", e)
+                _effect.emit(NftRegistrationEffect.ShowToast("Personel listesi alınamadı"))
+            }
+
         }
     }
 
@@ -115,5 +144,17 @@ class NftRegistrationViewModel @Inject constructor(
                 }
             )
         }
+    }
+
+    private fun changePanelVisibility() {
+        _state.value = _state.value.copy(panelVisibility = !_state.value.panelVisibility)
+    }
+
+    private fun loadPersonnelData(selectedPersonnel: TransferItemModel) {
+        _state.value = _state.value.copy(
+            selectedPersonnel = selectedPersonnel,
+            panelVisibility = false,
+            inputData = selectedPersonnel.id
+        )
     }
 }

@@ -18,7 +18,12 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
+import com.bestmakina.depotakip.common.model.DropdownType
 import com.bestmakina.depotakip.common.util.extension.toastShort
+import com.bestmakina.depotakip.presentation.ui.component.card.ExpandableCard
+import com.bestmakina.depotakip.presentation.ui.component.panel.SearchablePanel
+import com.bestmakina.depotakip.presentation.ui.view.TransferWithRecete.TransferWithReceteAction
+import com.bestmakina.depotakip.presentation.ui.view.bulkTransfer.BulkTransferAction
 import com.bestmakina.depotakip.presentation.ui.view.nftregistration.NftRegistrationAction
 import com.bestmakina.depotakip.presentation.ui.view.nftregistration.NftRegistrationEffect
 import com.bestmakina.depotakip.presentation.ui.view.nftregistration.NftRegistrationState
@@ -37,6 +42,19 @@ fun NftRegistrationView(viewModel: NftRegistrationViewModel = hiltViewModel()) {
         }
     }
 
+    AnimatedVisibility(visible = state.panelVisibility) {
+        SearchablePanel(
+            items = state.personnelList,
+            selectedId = null,
+            onItemSelected = {
+                viewModel.handleAction(NftRegistrationAction.LoadPersonnelData(it))
+            },
+            onDismiss = {
+                viewModel.handleAction(NftRegistrationAction.ChangePanelVisibility)
+            }
+        )
+    }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -47,7 +65,8 @@ fun NftRegistrationView(viewModel: NftRegistrationViewModel = hiltViewModel()) {
             state = state,
             onInputChange = { viewModel.handleAction(NftRegistrationAction.SetInputData(it)) },
             onScanClick = { viewModel.handleAction(NftRegistrationAction.ScanButtonClick) },
-            onCancelClick = { viewModel.handleAction(NftRegistrationAction.StartNfcScan) }
+            onCancelClick = { viewModel.handleAction(NftRegistrationAction.StartNfcScan) },
+            viewmodel = viewModel
         )
 
         if (state.alertDialogVisibility) {
@@ -65,7 +84,8 @@ private fun MainContent(
     state: NftRegistrationState,
     onInputChange: (String) -> Unit,
     onScanClick: () -> Unit,
-    onCancelClick: () -> Unit
+    onCancelClick: () -> Unit,
+    viewmodel: NftRegistrationViewModel = hiltViewModel()
 ) {
     Column(
         modifier = Modifier
@@ -91,6 +111,13 @@ private fun MainContent(
             singleLine = true,
             shape = RoundedCornerShape(12.dp),
             enabled = !state.isWaitingForNfcScan
+        )
+
+        ExpandableCard(
+            selectedItem = state.selectedPersonnel?.name ?: "",
+            onclick = {
+                viewmodel.handleAction(NftRegistrationAction.ChangePanelVisibility)
+            }
         )
 
         Button(
