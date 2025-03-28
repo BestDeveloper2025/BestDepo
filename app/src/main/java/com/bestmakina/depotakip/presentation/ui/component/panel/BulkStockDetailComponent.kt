@@ -27,6 +27,7 @@ import com.bestmakina.depotakip.R
 import com.bestmakina.depotakip.common.util.extension.toastShort
 import com.bestmakina.depotakip.presentation.ui.component.custom.QuantitySelector
 import com.bestmakina.depotakip.presentation.ui.component.custom.TableStockInfo
+import kotlin.math.max
 
 @Composable
 fun BulkStockDetailPanel(
@@ -43,7 +44,7 @@ fun BulkStockDetailPanel(
     minStock: Int = 0,
     onclick: (Int, String) -> Unit,
     onBackButtonClick: () -> Unit,
-    onCreateOrderButtonClick: () -> Unit
+    onCreateOrderButtonClick: (Int, String) -> Unit
 ) {
 
     val buttonClickable = remember { mutableStateOf(true) }
@@ -82,8 +83,6 @@ fun BulkStockDetailPanel(
             null
         }
     }
-
-
 
     Dialog(
         onDismissRequest = onBackButtonClick,
@@ -233,14 +232,21 @@ fun BulkStockDetailPanel(
     }
 
     AnimatedVisibility(visible = showCreateOrderDialog) {
+        val siparisEdilecekMiktar = max(0, (currentRecipeAmount - montajaVerilen - currentUpperDepotAmount))
+
         AlertDialog(
             containerColor = Color.Black,
             onDismissRequest = { showCreateOrderDialog = false },
             title = { Text("Onay", fontWeight = FontWeight.Bold) },
-            text = { Text("$quantity adet $currentStockName Sipariş Oluşturmak İstiyor Musunuz?") },
+            text = {
+                Text("$siparisEdilecekMiktar adet $currentStockName sipariş etmek istiyor musunuz?")
+            },
             confirmButton = {
                 Button(
-                    onClick = { onCreateOrderButtonClick() },
+                    onClick = {
+                        onCreateOrderButtonClick(siparisEdilecekMiktar, currentStockCode)
+                        showCreateOrderDialog = false
+                    },
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                 ) {
                     Text("Evet")
@@ -255,4 +261,5 @@ fun BulkStockDetailPanel(
             }
         )
     }
+
 }

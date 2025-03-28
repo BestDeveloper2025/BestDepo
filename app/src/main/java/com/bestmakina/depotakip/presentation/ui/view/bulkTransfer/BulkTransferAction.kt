@@ -8,5 +8,5 @@ sealed class BulkTransferAction {
     data object StartTransferButtonClick : BulkTransferAction()
     data class TransferProduct(val quantity: Int, val stockCode: String) : BulkTransferAction()
     data object CloseDetailPanel : BulkTransferAction()
-    data object OnCreateOrderButtonClick : BulkTransferAction()
+    data class OnCreateOrderButtonClick(val orderAmount: Int, val stockCode: String) : BulkTransferAction()
 }

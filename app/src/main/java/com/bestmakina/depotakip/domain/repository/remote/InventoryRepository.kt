@@ -2,9 +2,11 @@ package com.bestmakina.depotakip.domain.repository.remote
 
 import com.bestmakina.depotakip.common.network.NetworkResult
 import com.bestmakina.depotakip.data.model.request.inventory.BulkTransferWithRecereRequest
+import com.bestmakina.depotakip.data.model.request.inventory.CreateOrderRequest
 import com.bestmakina.depotakip.data.model.request.inventory.GetInventoryDataRequest
 import com.bestmakina.depotakip.data.model.request.inventory.MachineSerialRequest
 import com.bestmakina.depotakip.data.model.request.inventory.TransferWithReceteRequest
+import com.bestmakina.depotakip.data.model.response.inventory.CreateOrderDto
 import com.bestmakina.depotakip.data.model.response.inventory.MachinePrescriptionsDto
 import com.bestmakina.depotakip.data.model.response.inventory.TransferWithReceteResponse
 import com.bestmakina.depotakip.domain.model.InventoryModel
@@ -16,5 +18,5 @@ interface InventoryRepository {
     suspend fun transferWithRecete(request: TransferWithReceteRequest): Flow<NetworkResult<TransferWithReceteResponse>>
     suspend fun getMachinePrescription(request: MachineSerialRequest): Flow<NetworkResult<StockCodes>>
     suspend fun bulkTransferWithRecete(request: BulkTransferWithRecereRequest): Flow<NetworkResult<TransferWithReceteResponse>>
-
+    suspend fun createOrder(request: CreateOrderRequest): Flow<NetworkResult<CreateOrderDto>>
 }

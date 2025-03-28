@@ -173,7 +173,9 @@ fun BulkTransferView(
                 onBackButtonClick = {
                     viewModel.handleAction(BulkTransferAction.CloseDetailPanel)
                 },
-                onCreateOrderButtonClick = { viewModel.handleAction(BulkTransferAction.OnCreateOrderButtonClick) }
+                onCreateOrderButtonClick = { orderAmount , stockCode->
+                    viewModel.handleAction(BulkTransferAction.OnCreateOrderButtonClick(orderAmount, stockCode))
+                }
             )
         }
     }

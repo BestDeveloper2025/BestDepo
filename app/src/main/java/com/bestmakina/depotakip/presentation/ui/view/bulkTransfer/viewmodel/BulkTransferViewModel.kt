@@ -8,6 +8,7 @@ import com.bestmakina.depotakip.common.model.TransferItemModel
 import com.bestmakina.depotakip.common.network.NetworkResult
 import com.bestmakina.depotakip.data.local.SharedPreferencesHelper
 import com.bestmakina.depotakip.data.model.request.inventory.BulkTransferWithRecereRequest
+import com.bestmakina.depotakip.data.model.request.inventory.CreateOrderRequest
 import com.bestmakina.depotakip.data.model.request.inventory.GetInventoryDataRequest
 import com.bestmakina.depotakip.data.model.request.inventory.MachineSerialRequest
 import com.bestmakina.depotakip.domain.manager.NfcManager
@@ -15,6 +16,7 @@ import com.bestmakina.depotakip.domain.model.PreferencesKeys
 import com.bestmakina.depotakip.domain.usecase.personnel.GetNameByBarcodeUseCase
 import com.bestmakina.depotakip.domain.usecase.cache.GetAllMachineDataUseCase
 import com.bestmakina.depotakip.domain.usecase.inventory.BulkTransferWithReceteUseCase
+import com.bestmakina.depotakip.domain.usecase.inventory.CreateOrderUseCase
 import com.bestmakina.depotakip.domain.usecase.inventory.GetInventoryDataUseCase
 import com.bestmakina.depotakip.domain.usecase.inventory.GetMachinePrescriptionUseCase
 import com.bestmakina.depotakip.presentation.ui.view.bulkTransfer.BulkTransferAction
@@ -41,7 +43,8 @@ class BulkTransferViewModel @Inject constructor(
     private val getMachineDataUseCase: GetAllMachineDataUseCase,
     private val getMachinePrescriptionUseCase: GetMachinePrescriptionUseCase,
     private val getInventoryDataUseCase: GetInventoryDataUseCase,
-    private val bulkTransferWithReceteUseCase: BulkTransferWithReceteUseCase
+    private val bulkTransferWithReceteUseCase: BulkTransferWithReceteUseCase,
+    private val createOrderUseCase: CreateOrderUseCase
 ) : BaseNfcViewModel(nfcManager) {
 
     private val _state = MutableStateFlow(BulkTransferState())
@@ -62,7 +65,7 @@ class BulkTransferViewModel @Inject constructor(
             is BulkTransferAction.StartTransferButtonClick -> startTransfer()
             is BulkTransferAction.TransferProduct -> transferSelectedItem(action.quantity, action.stockCode)
             is BulkTransferAction.CloseDetailPanel -> closeDetailPanel()
-            is BulkTransferAction.OnCreateOrderButtonClick -> createOrderButtonClick()
+            is BulkTransferAction.OnCreateOrderButtonClick -> createOrderButtonClick(action.orderAmount, action.stockCode)
         }
     }
 
@@ -333,7 +336,8 @@ class BulkTransferViewModel @Inject constructor(
                                             getInventoryData(state.value.stockCodes[nextListState])
                                         }
                                     } else {
-                                        _effect.emit(BulkTransferEffect.ShowToast("Bir Sonraki Malzemeye Geçmeden Önce Sipariş Oluşturun"))
+                                        _effect.emit(BulkTransferEffect.ShowToast("Bir Sonraki Malzemeye Geçmeden Önce Sipariş Oluşturun veya Transferi Tamamlayın"))
+                                        getInventoryData(state.value.stockCodes[state.value.listState])
                                     }
 
 
@@ -353,8 +357,40 @@ class BulkTransferViewModel @Inject constructor(
         }
     }
 
-    private fun createOrderButtonClick() {
-        Log.d("BulkTransferViewModel", "createOrderButtonClick: tıklandı")
+    private fun createOrderButtonClick(orderAmount: Int, stockCode: String) {
+        viewModelScope.launch {
+            val request = CreateOrderRequest(
+                DepoKodu = _depoKodu,
+                MakinaSeri = state.value.selectedMachine!!.id,
+                StokKodu = stockCode,
+                TerminalUser = _terminalKullanici,
+                IhtiyacMiktari = orderAmount.toString(),
+                ReceteMiktari = state.value.currentProductDetail?.receteMiktari.toString(),
+                LineNumber = (state.value.listState + 1).toString()
+            )
+
+            Log.d("CreateOrderRequest", "createOrderButtonClick: $request")
+            createOrderUseCase.invoke(request).flowOn(Dispatchers.IO).collectLatest { result ->
+                when (result) {
+                    is NetworkResult.Loading -> {
+                        _state.value = _state.value.copy(isLoading = true)
+                    }
+                    is NetworkResult.Success -> {
+                        _effect.emit(BulkTransferEffect.ShowToast("Sipariş Başarıyla Oluşturuldu"))
+                        val nextListState = state.value.listState + 1
+                        _state.value = _state.value.copy(
+                            isLoading = false,
+                            listState = nextListState
+                        )
+                        getInventoryData(state.value.stockCodes[nextListState])
+                    }
+                    is NetworkResult.Error -> {
+                        _effect.emit(BulkTransferEffect.ShowToast("Sipariş Oluşturulurken Bir Hata Oluştu"))
+                        _state.value = _state.value.copy(isLoading = false)
+                    }
+                }
+            }
+        }
     }
 
     private fun closeDetailPanel() {

@@ -1,11 +1,14 @@
 package com.bestmakina.depotakip.data.repository.remote
 
+import androidx.collection.emptyIntSet
 import com.bestmakina.depotakip.common.network.NetworkResult
 import com.bestmakina.depotakip.data.mapper.toDomain
 import com.bestmakina.depotakip.data.model.request.inventory.BulkTransferWithRecereRequest
+import com.bestmakina.depotakip.data.model.request.inventory.CreateOrderRequest
 import com.bestmakina.depotakip.data.model.request.inventory.GetInventoryDataRequest
 import com.bestmakina.depotakip.data.model.request.inventory.MachineSerialRequest
 import com.bestmakina.depotakip.data.model.request.inventory.TransferWithReceteRequest
+import com.bestmakina.depotakip.data.model.response.inventory.CreateOrderDto
 import com.bestmakina.depotakip.data.model.response.inventory.MachinePrescriptionsDto
 import com.bestmakina.depotakip.data.model.response.inventory.TransferWithReceteResponse
 import com.bestmakina.depotakip.data.remote.InventoryApiService
@@ -82,6 +85,21 @@ class InventoryRepositoryImpl @Inject constructor(
 
         }catch (e: Exception) {
             emit(NetworkResult.Error("Transfer Yapılırken Bir Hata Oluştu: ${e.message}"))
+        }
+    }
+
+    override suspend fun createOrder(request: CreateOrderRequest): Flow<NetworkResult<CreateOrderDto>> = flow {
+        emit(NetworkResult.Loading())
+        try {
+            val result = inventoryService.createOrder(request)
+            val responseBody = result.body()
+            if (responseBody != null) {
+                emit(NetworkResult.Success(responseBody))
+            } else {
+                emit(NetworkResult.Error("Sunucuda Bir Hata Oluştu Lütfen Tekrar Deneyiniz"))
+            }
+        }catch (e: Exception){
+            emit(NetworkResult.Error("Sipariş Oluşturulurken Bir Hata Oluştu: ${e.message}"))
         }
     }
 }
