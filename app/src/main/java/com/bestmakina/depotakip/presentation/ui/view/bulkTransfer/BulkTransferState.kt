@@ -4,11 +4,11 @@ import com.bestmakina.depotakip.common.model.TransferItemModel
 import com.bestmakina.depotakip.domain.model.InventoryModel
 
 data class BulkTransferState(
-    val isLoading: Boolean = false,
+    val isLoading: Boolean = true,
     val name: String = "",
     val wareHouseName: String = "",
-    val isNfcEnabled: Boolean = true,
-    val selectedPersonnel: TransferItemModel? = TransferItemModel(id = "000717083", name = "Erçin Akkaya"),
+    val isNfcEnabled: Boolean = false,
+    val selectedPersonnel: TransferItemModel? = TransferItemModel(id = "000717083", name = "Personel Seç"),
     val machineList: List<TransferItemModel> = emptyList(),
     val selectedMachine: TransferItemModel? = TransferItemModel(id = "", name = "Makina Seri Seç"),
     val searchablePanelVisibility: Boolean = false,

@@ -58,7 +58,7 @@ class NfcManager @Inject constructor(
     /**
      * NFC adaptörünün durumunu kontrol eder
      */
-    fun checkNfcAvailability() {
+    private fun checkNfcAvailability() {
         _nfcStatus.value = when {
             nfcAdapter == null -> NfcStatus.NotSupported
             !nfcAdapter.isEnabled -> NfcStatus.Disabled

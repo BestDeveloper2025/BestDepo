@@ -382,7 +382,7 @@ class TransferWithReceteViewModel @Inject constructor(
             item.id.removePrefix("0") == barcodeData || item.id == barcodeData
         }
         if (foundItem != null) {
-            Log.d("NftRegistration", "Etikettten okunan veri: ${foundItem.id} ${foundItem.name}")
+            Log.d("TransferViewModel", "Etikettten okunan veri: ${foundItem.id} ${foundItem.name}")
             _state.value = _state.value.copy(selectedPersonnel = foundItem)
         } else {
             viewModelScope.launch {
@@ -397,5 +397,4 @@ class TransferWithReceteViewModel @Inject constructor(
             nfcManager.forceCloseConnections()
         }
     }
-
 }

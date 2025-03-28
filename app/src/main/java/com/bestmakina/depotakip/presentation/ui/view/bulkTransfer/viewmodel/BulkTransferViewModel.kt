@@ -70,8 +70,6 @@ class BulkTransferViewModel @Inject constructor(
     }
 
     init {
-        //silinecek
-        getMachineData()
         observeNfcTags()
         preparePage()
     }
@@ -136,7 +134,7 @@ class BulkTransferViewModel @Inject constructor(
         viewModelScope.launch {
             getNameToBarcodeUseCase(barcode).collectLatest { result ->
                 when (result) {
-                    is NetworkResult.Loading -> Log.d("LoginViewModel", "getNameByBarcode: Loading")
+                    is NetworkResult.Loading -> Log.d("barcodeviewmodel", "getNameByBarcode: Loading")
                     is NetworkResult.Success -> {
                         result.data?.let {
                             _state.value = _state.value.copy(
@@ -153,7 +151,7 @@ class BulkTransferViewModel @Inject constructor(
                     is NetworkResult.Error -> {
                         _state.value = _state.value.copy(isLoading = false)
                         Log.d(
-                            "LoginViewModel",
+                            "barcodeviewmodel",
                             "getNameByBarcode: Error, message: ${result.message}"
                         )
                         _effect.emit(BulkTransferEffect.ShowToast("Barkod okuma hatası: ${result.message}"))

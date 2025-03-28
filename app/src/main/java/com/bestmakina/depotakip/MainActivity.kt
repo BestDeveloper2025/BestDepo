@@ -20,6 +20,7 @@ import com.bestmakina.depotakip.presentation.navigation.AppNavGraph
 import com.bestmakina.depotakip.presentation.theme.DepoTakipTheme
 import com.bestmakina.depotakip.presentation.ui.view.bulkTransfer.view.BulkTransferView
 import com.bestmakina.depotakip.presentation.ui.view.nftregistration.view.NftRegistrationView
+import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 
@@ -46,9 +47,10 @@ class MainActivity : ComponentActivity() {
         )
 
         setContent {
+
             navController = rememberNavController()
             DepoTakipTheme {
-                NftRegistrationView()
+                AppNavGraph(navController)
             }
         }
     }

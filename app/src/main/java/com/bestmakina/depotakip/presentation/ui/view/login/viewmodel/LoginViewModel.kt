@@ -1,5 +1,6 @@
 package com.bestmakina.depotakip.presentation.ui.view.login.viewmodel
 
+import android.app.Activity
 import android.content.Context
 import android.nfc.Tag
 import android.util.Log
@@ -18,6 +19,7 @@ import com.bestmakina.depotakip.presentation.ui.view.login.LoginState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -35,7 +37,7 @@ class LoginViewModel @Inject constructor(
     private val getNameToBarcodeUseCase: GetNameByBarcodeUseCase,
     private val sharedPreferencesHelper: SharedPreferencesHelper,
     private val nfcManager: NfcManager,
-    @ApplicationContext private val context: Context
+    @ApplicationContext private val context: Context,
 ) : BaseNfcViewModel(nfcManager) {
 
     private val barcodeManager = BarcodeManager(context)
@@ -130,7 +132,7 @@ class LoginViewModel @Inject constructor(
                     }
                     is NetworkResult.Error -> {
                         _state.value = _state.value.copy(isLoading = false)
-                        Log.d("LoginViewModel", "getNameByBarcode: Error, message: ${result.message}")
+                        Log.d("LoginViewModel", "getNameByBarcode: Error, message ercin: ${result.message}")
                         _effect.emit(LoginEffect.ShowToast("Barkod okuma hatası: ${result.message}"))
                     }
                 }
@@ -185,10 +187,16 @@ class LoginViewModel @Inject constructor(
         _state.value = _state.value.copy(waitingNfc = !_state.value.isLoading)
     }
 
-    override fun onCleared() {
+    public override fun onCleared() {
+        Log.d("LoginViewModel", "onCleared: bura çalıştı")
         super.onCleared()
+        viewModelScope.coroutineContext.cancelChildren()
         barcodeJob?.cancel()
         barcodeManager.clearBarcodeData()
+        if (context is Activity) {
+            val activity = context as Activity
+            nfcManager.disableForegroundDispatch(activity = activity)
+        }
     }
 
 }

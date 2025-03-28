@@ -120,6 +120,10 @@ dependencies {
 
     implementation (libs.androidx.material3.v100)
 
+    //Tam ekran yapmak için
+    implementation (libs.accompanist.systemuicontroller)
+
+
 
 
 }

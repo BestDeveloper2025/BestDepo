@@ -8,6 +8,6 @@ data class NftRegistrationState(
     val alertDialogVisibility: Boolean = false,
     val isWaitingForNfcScan: Boolean = false,
     val personnelList: List<TransferItemModel> = emptyList(),
-    val selectedPersonnel: TransferItemModel? = TransferItemModel(id = "", name = "Teslim Alan Seç"),
+    val selectedPersonnel: TransferItemModel? = TransferItemModel(id = "", name = "Personel Seç"),
     val panelVisibility: Boolean = false,
 )

@@ -42,6 +42,8 @@ fun NftRegistrationView(viewModel: NftRegistrationViewModel = hiltViewModel()) {
         }
     }
 
+
+
     AnimatedVisibility(visible = state.panelVisibility) {
         SearchablePanel(
             items = state.personnelList,

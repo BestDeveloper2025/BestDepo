@@ -18,6 +18,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -55,6 +56,7 @@ fun LoginView(
                 }
                 is LoginEffect.NavigateTo -> {
                     Toast.makeText(context, "Giriş Başarılı", Toast.LENGTH_SHORT).show()
+                    loginViewModel.onCleared()
                     navController.navigate(effect.destination) {
                         popUpTo(Screens.SplashScreen.route) {
                             inclusive = true
@@ -64,6 +66,7 @@ fun LoginView(
             }
         }
     }
+
     Box(
         modifier = Modifier
             .fillMaxSize()

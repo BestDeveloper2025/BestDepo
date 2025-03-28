@@ -1,5 +1,7 @@
 package com.bestmakina.depotakip.presentation.ui.view.nftregistration.viewmodel
 
+import android.app.Activity
+import android.content.Context
 import kotlinx.coroutines.flow.asSharedFlow
 
 
@@ -14,6 +16,8 @@ import com.bestmakina.depotakip.presentation.ui.view.nftregistration.NftRegistra
 import com.bestmakina.depotakip.presentation.ui.view.nftregistration.NftRegistrationEffect
 import com.bestmakina.depotakip.presentation.ui.view.nftregistration.NftRegistrationState
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -25,7 +29,8 @@ import javax.inject.Inject
 @HiltViewModel
 class NftRegistrationViewModel @Inject constructor(
     private val getTeslimAlanUseCase: GetAllRecipientUseCase,
-    private val nfcManager: NfcManager
+    private val nfcManager: NfcManager,
+    @ApplicationContext private val context: Context,
 ) : BaseNfcViewModel(nfcManager) {
 
     private val _state = MutableStateFlow(NftRegistrationState())
@@ -156,5 +161,15 @@ class NftRegistrationViewModel @Inject constructor(
             panelVisibility = false,
             inputData = selectedPersonnel.id
         )
+    }
+
+    public override fun onCleared() {
+        super.onCleared()
+        viewModelScope.coroutineContext.cancelChildren()
+        Log.d("NftRegistrationViewModel", "onCleared: ViewModel cleared")
+        if (context is Activity) {
+            val activity = context as Activity
+            nfcManager.disableForegroundDispatch(activity = activity)
+        }
     }
 }
