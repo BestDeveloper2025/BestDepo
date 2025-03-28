@@ -40,6 +40,8 @@ class LoginViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
 ) : BaseNfcViewModel(nfcManager) {
 
+    // TODO() : barkod işlemleri kaldırılaak burdan
+
     private val barcodeManager = BarcodeManager(context)
 
     private val _state = MutableStateFlow(LoginState())
@@ -118,7 +120,6 @@ class LoginViewModel @Inject constructor(
     }
 
     private fun getNameByBarcode(barcode: String) {
-        Log.d("LoginViewModel", "getNameByBarcode: $barcode")
         viewModelScope.launch {
             getNameToBarcodeUseCase(barcode).collectLatest { result ->
                 when (result) {
@@ -133,7 +134,7 @@ class LoginViewModel @Inject constructor(
                     is NetworkResult.Error -> {
                         _state.value = _state.value.copy(isLoading = false)
                         Log.d("LoginViewModel", "getNameByBarcode: Error, message ercin: ${result.message}")
-                        _effect.emit(LoginEffect.ShowToast("Barkod okuma hatası: ${result.message}"))
+                        _effect.emit(LoginEffect.ShowToast("Barkod ile eşleşen personel bulunamadı Lütfen Başka Bir Barkod Okutunuz"))
                     }
                 }
             }
@@ -190,13 +191,11 @@ class LoginViewModel @Inject constructor(
     public override fun onCleared() {
         Log.d("LoginViewModel", "onCleared: bura çalıştı")
         super.onCleared()
+        nfcManager.forceCloseConnections()
         viewModelScope.coroutineContext.cancelChildren()
         barcodeJob?.cancel()
         barcodeManager.clearBarcodeData()
-        if (context is Activity) {
-            val activity = context as Activity
-            nfcManager.disableForegroundDispatch(activity = activity)
-        }
+        viewModelScope.coroutineContext.cancelChildren()
     }
 
 }

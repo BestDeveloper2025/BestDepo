@@ -15,6 +15,7 @@ import com.bestmakina.depotakip.domain.manager.NfcManager
 import com.bestmakina.depotakip.domain.model.PreferencesKeys
 import com.bestmakina.depotakip.domain.usecase.personnel.GetNameByBarcodeUseCase
 import com.bestmakina.depotakip.domain.usecase.cache.GetAllMachineDataUseCase
+import com.bestmakina.depotakip.domain.usecase.cache.GetAllRecipientUseCase
 import com.bestmakina.depotakip.domain.usecase.inventory.BulkTransferWithReceteUseCase
 import com.bestmakina.depotakip.domain.usecase.inventory.CreateOrderUseCase
 import com.bestmakina.depotakip.domain.usecase.inventory.GetInventoryDataUseCase
@@ -39,12 +40,12 @@ import javax.inject.Inject
 class BulkTransferViewModel @Inject constructor(
     private val nfcManager: NfcManager,
     private val sharedPreferencesHelper: SharedPreferencesHelper,
-    private val getNameToBarcodeUseCase: GetNameByBarcodeUseCase,
     private val getMachineDataUseCase: GetAllMachineDataUseCase,
     private val getMachinePrescriptionUseCase: GetMachinePrescriptionUseCase,
     private val getInventoryDataUseCase: GetInventoryDataUseCase,
     private val bulkTransferWithReceteUseCase: BulkTransferWithReceteUseCase,
-    private val createOrderUseCase: CreateOrderUseCase
+    private val createOrderUseCase: CreateOrderUseCase,
+    private val getRecipientUseCase: GetAllRecipientUseCase
 ) : BaseNfcViewModel(nfcManager) {
 
     private val _state = MutableStateFlow(BulkTransferState())
@@ -63,9 +64,16 @@ class BulkTransferViewModel @Inject constructor(
             is BulkTransferAction.ChangePanelVisibility -> changeListPanelVisibility()
             is BulkTransferAction.LoadMachineData -> loadMachineData(action.machineData)
             is BulkTransferAction.StartTransferButtonClick -> startTransfer()
-            is BulkTransferAction.TransferProduct -> transferSelectedItem(action.quantity, action.stockCode)
+            is BulkTransferAction.TransferProduct -> transferSelectedItem(
+                action.quantity,
+                action.stockCode
+            )
+
             is BulkTransferAction.CloseDetailPanel -> closeDetailPanel()
-            is BulkTransferAction.OnCreateOrderButtonClick -> createOrderButtonClick(action.orderAmount, action.stockCode)
+            is BulkTransferAction.OnCreateOrderButtonClick -> createOrderButtonClick(
+                action.orderAmount,
+                action.stockCode
+            )
         }
     }
 
@@ -117,9 +125,6 @@ class BulkTransferViewModel @Inject constructor(
             readFromTagAndLog(tag).fold(
                 onSuccess = { data ->
                     _tagData.value = data
-                    _state.value = _state.value.copy(
-                        isNfcEnabled = true
-                    )
                     getNameByBarcode(data)
                 },
                 onFailure = { error ->
@@ -132,31 +137,27 @@ class BulkTransferViewModel @Inject constructor(
 
     private fun getNameByBarcode(barcode: String) {
         viewModelScope.launch {
-            getNameToBarcodeUseCase(barcode).collectLatest { result ->
-                when (result) {
-                    is NetworkResult.Loading -> Log.d("barcodeviewmodel", "getNameByBarcode: Loading")
-                    is NetworkResult.Success -> {
-                        result.data?.let {
-                            _state.value = _state.value.copy(
-                                isLoading = false,
-                                selectedPersonnel = TransferItemModel(
-                                    id = barcode,
-                                    name = it.personnelAdi
-                                ),
-                            )
-                            getMachineData()
-                        }
-                    }
-
-                    is NetworkResult.Error -> {
-                        _state.value = _state.value.copy(isLoading = false)
-                        Log.d(
-                            "barcodeviewmodel",
-                            "getNameByBarcode: Error, message: ${result.message}"
+            try {
+                val personnelList = getRecipientUseCase().map { entityList ->
+                    entityList.map { entity ->
+                        TransferItemModel(
+                            id = entity.Kod ?: "",
+                            name = entity.TeslimAlan ?: ""
                         )
-                        _effect.emit(BulkTransferEffect.ShowToast("Barkod okuma hatası: ${result.message}"))
                     }
+                }.first()
+                val selectedPersonnel = personnelList.firstOrNull { it.id == barcode }
+
+                if (selectedPersonnel != null) {
+                    _state.value =
+                        _state.value.copy(selectedPersonnel = selectedPersonnel, isLoading = false, isNfcEnabled = true)
+                    getMachineData()
+                } else {
+                    _effect.emit(BulkTransferEffect.ShowToast("Barkod ile eşleşen personel bulunamadı Lütfen Başka Bir Barkod Okutunuz"))
                 }
+            } catch (e: Exception) {
+                Log.d("BulkTransferViewModel", "getNameByBarcode: Error, message: ${e.message}")
+                _effect.emit(BulkTransferEffect.ShowToast("Barkod okuma hatası: ${e.message}"))
             }
         }
     }
@@ -313,10 +314,14 @@ class BulkTransferViewModel @Inject constructor(
                                 if (it.Durum == "OK") {
                                     _effect.emit(BulkTransferEffect.ShowToast("Transfer Başarılı"))
 
-                                    val currentProductDetail = state.value.currentProductDetail ?: return@collectLatest
-                                    val isLastItem = state.value.listState + 1 == state.value.stockCodes.size
-                                    val montajaVerilen = currentProductDetail.montajaVerilen ?: return@collectLatest
-                                    val isQuantityEqualToRecipe = montajaVerilen + quantity == currentProductDetail.receteMiktari
+                                    val currentProductDetail =
+                                        state.value.currentProductDetail ?: return@collectLatest
+                                    val isLastItem =
+                                        state.value.listState + 1 == state.value.stockCodes.size
+                                    val montajaVerilen =
+                                        currentProductDetail.montajaVerilen ?: return@collectLatest
+                                    val isQuantityEqualToRecipe =
+                                        montajaVerilen + quantity == currentProductDetail.receteMiktari
 
                                     if (isQuantityEqualToRecipe) {
                                         if (isLastItem) {
@@ -373,6 +378,7 @@ class BulkTransferViewModel @Inject constructor(
                     is NetworkResult.Loading -> {
                         _state.value = _state.value.copy(isLoading = true)
                     }
+
                     is NetworkResult.Success -> {
                         _effect.emit(BulkTransferEffect.ShowToast("Sipariş Başarıyla Oluşturuldu"))
                         val nextListState = state.value.listState + 1
@@ -382,6 +388,7 @@ class BulkTransferViewModel @Inject constructor(
                         )
                         getInventoryData(state.value.stockCodes[nextListState])
                     }
+
                     is NetworkResult.Error -> {
                         _effect.emit(BulkTransferEffect.ShowToast("Sipariş Oluşturulurken Bir Hata Oluştu"))
                         _state.value = _state.value.copy(isLoading = false)

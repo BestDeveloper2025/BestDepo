@@ -26,6 +26,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -393,8 +394,10 @@ class TransferWithReceteViewModel @Inject constructor(
 
     override fun onCleared() {
         super.onCleared()
-        viewModelScope.launch {
-            nfcManager.forceCloseConnections()
-        }
+        nfcManager.forceCloseConnections()
+        viewModelScope.coroutineContext.cancelChildren()
+        barcodeJob?.cancel()
+        barcodeManager.clearBarcodeData()
+        viewModelScope.coroutineContext.cancelChildren()
     }
 }

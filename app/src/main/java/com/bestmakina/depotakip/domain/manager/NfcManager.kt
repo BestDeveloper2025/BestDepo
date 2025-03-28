@@ -297,7 +297,7 @@ class NfcManager @Inject constructor(
     /**
      * Herhangi bir açık bağlantı varsa kapatmaya zorlar
      */
-    suspend fun forceCloseConnections() {
+    fun forceCloseConnections() {
         if (_isConnected.value) {
             Log.d(TAG, "Force closing NFC connections")
             _isConnected.value = false
